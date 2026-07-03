@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Approval Prediction Dashboard</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <div class="container">
+        
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-file-invoice-dollar logo-icon"></i>
+                <h1>CrediShield <span>AI</span></h1>
+            </div>
+            <p class="subtitle">Enterprise Loan Risk Assessment & Predictor Pipeline</p>
+        </header>
+
+        {% if not model_exists %}
+        <!-- Model Warning -->
+        <div class="warning-card">
+            <i class="fa-solid fa-triangle-exclamation warning-icon"></i>
+            <div>
+                <h3>Model Pipeline Offline</h3>
+                <p>The prediction engine model files were not found. Please train the ML pipeline by running <code>python src/train_models.py</code> first.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="main-layout">
+            
+            <!-- Left Side: Prediction Form -->
+            <section class="form-section glass-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-clipboard-list"></i> Applicant Information</h2>
+                    <p>Provide financial and demographic details to run the assessment model.</p>
+                </div>
+                
+                <form id="loanForm">
+                    <div class="form-grid">
+                        
+                        <!-- Personal Info -->
+                        <div class="form-group">
+                            <label for="no_of_dependents">Number of Dependents</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-users input-icon"></i>
+                                <input type="number" id="no_of_dependents" name="no_of_dependents" min="0" max="10" value="1" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="education">Education Level</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-user-graduate input-icon"></i>
+                                <select id="education" name="education" required>
+                                    <option value="Graduate" selected>Graduate</option>
+                                    <option value="Not Graduate">Not Graduate</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="self_employed">Self Employed</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-briefcase input-icon"></i>
+                                <select id="self_employed" name="self_employed" required>
+                                    <option value="No" selected>No (Salaried)</option>
+                                    <option value="Yes">Yes (Self Employed)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cibil_score">CIBIL Score (Credit Rating)</label>
+                            <div class="range-container">
+                                <input type="range" id="cibil_score" name="cibil_score" min="300" max="900" value="650" class="slider">
+                                <div class="range-val-container">
+                                    <span class="range-min">300</span>
+                                    <span id="cibil_val" class="range-current badge-neutral">650</span>
+                                    <span class="range-max">900</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loan Info -->
+                        <div class="form-group">
+                            <label for="income_annum">Annual Income (₹)</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-indian-rupee-sign input-icon"></i>
+                                <input type="number" id="income_annum" name="income_annum" min="100000" max="100000000" value="4500000" step="10000" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loan_amount">Requested Loan Amount (₹)</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-hand-holding-dollar input-icon"></i>
+                                <input type="number" id="loan_amount" name="loan_amount" min="50000" max="200000000" value="12000000" step="10000" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loan_term">Loan Term</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-calendar-days input-icon"></i>
+                                <select id="loan_term" name="loan_term" required>
+                                    <option value="2">2 Years (24 Months)</option>
+                                    <option value="4">4 Years (48 Months)</option>
+                                    <option value="6" selected>6 Years (72 Months)</option>
+                                    <option value="8">8 Years (96 Months)</option>
+                                    <option value="10">10 Years (120 Months)</option>
+                                    <option value="12">12 Years (144 Months)</option>
+                                    <option value="14">14 Years (168 Months)</option>
+                                    <option value="16">16 Years (192 Months)</option>
+                                    <option value="18">18 Years (216 Months)</option>
+                                    <option value="20">20 Years (240 Months)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Assets Valuation Info -->
+                        <div class="form-group">
+                            <label for="residential_assets_value">Residential Assets Value (₹)</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-house-chimney input-icon"></i>
+                                <input type="number" id="residential_assets_value" name="residential_assets_value" min="0" max="100000000" value="2700000" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="commercial_assets_value">Commercial Assets Value (₹)</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-building-columns input-icon"></i>
+                                <input type="number" id="commercial_assets_value" name="commercial_assets_value" min="0" max="100000000" value="2200000" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="luxury_assets_value">Luxury Assets Value (₹)</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-gem input-icon"></i>
+                                <input type="number" id="luxury_assets_value" name="luxury_assets_value" min="0" max="100000000" value="8800000" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bank_asset_value">Bank Assets (Cash/Deposits) (₹)</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-piggy-bank input-icon"></i>
+                                <input type="number" id="bank_asset_value" name="bank_asset_value" min="0" max="100000000" value="3300000" required>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                    <button type="submit" class="submit-btn" {% if not model_exists %}disabled{% endif %}>
+                        <span id="btnText"><i class="fa-solid fa-bolt"></i> Evaluate Application</span>
+                        <div id="btnSpinner" class="spinner hidden"></div>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right Side: Model Outputs & Results -->
+            <div class="results-layout">
+                
+                <!-- Prediction Results Card -->
+                <section class="result-section glass-card" id="resultCard">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-square-poll-vertical"></i> Decision Engine Output</h2>
+                        <p>ML confidence scoring and final approval decision metrics.</p>
+                    </div>
+                    
+                    <div class="result-placeholder" id="resultPlaceholder">
+                        <i class="fa-solid fa-gears pulse-icon"></i>
+                        <p>Awaiting inputs. Fill the form and click "Evaluate Application" to run prediction.</p>
+                    </div>
+
+                    <div class="result-content hidden" id="resultContent">
+                        <div class="status-gauge-container">
+                            <div class="gauge-ring" id="gaugeRing">
+                                <div class="gauge-center">
+                                    <span class="gauge-percent" id="resultPercent">0%</span>
+                                    <span class="gauge-lbl">Confidence</span>
+                                </div>
+                            </div>
+                            <div class="decision-status" id="decisionStatus">
+                                <h3 id="decisionTitle">APPROVED</h3>
+                                <p id="decisionSub">Low Risk Profile</p>
+                            </div>
+                        </div>
+
+                        <div class="metrics-grid">
+                            <div class="metric-box">
+                                <span class="metric-lbl">Approval Probability</span>
+                                <span class="metric-val text-green" id="metricApp">0.0%</span>
+                            </div>
+                            <div class="metric-box">
+                                <span class="metric-lbl">Rejection Probability</span>
+                                <span class="metric-val text-red" id="metricRej">0.0%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="model-badge">
+                            <i class="fa-solid fa-microchip"></i> Evaluated via: <strong id="modelUsedText">N/A</strong>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Model Performance and Insights Card -->
+                <section class="insights-section glass-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-chart-line"></i> Pipeline Metrics & Explainability</h2>
+                        <p>Real-time analytics fetched directly from the serialized training pipeline.</p>
+                    </div>
+                    
+                    {% if model_info %}
+                    <div class="model-stats">
+                        <div class="stat-bubble">
+                            <span class="stat-title">Active Model</span>
+                            <span class="stat-num text-gradient">{{ model_info.name }}</span>
+                        </div>
+                        <div class="stat-bubble">
+                            <span class="stat-title">Training Accuracy</span>
+                            <span class="stat-num text-gradient">{{ "%.2f"|format(model_info.accuracy * 100) }}%</span>
+                        </div>
+                        <div class="stat-bubble">
+                            <span class="stat-title">F1-Score</span>
+                            <span class="stat-num text-gradient">{{ "%.2f"|format(model_info.f1 * 100) }}%</span>
+                        </div>
+                    </div>
+
+                    <div class="tabs-container">
+                        <div class="tabs-header">
+                            <button class="tab-btn active" data-tab="tab-importance">
+                                <i class="fa-solid fa-chart-bar"></i> Feature Importance
+                            </button>
+                            <button class="tab-btn" data-tab="tab-cm">
+                                <i class="fa-solid fa-border-all"></i> Confusion Matrix
+                            </button>
+                        </div>
+                        <div class="tabs-content">
+                            <div class="tab-pane active" id="tab-importance">
+                                <div class="plot-img-container">
+                                    <img src="{{ url_for('static', filename='images/feature_importance.png') }}" alt="Feature Importance Plot">
+                                </div>
+                                <p class="plot-desc">Quantifies how much influence each financial parameter has on the decision engine's output.</p>
+                            </div>
+                            <div class="tab-pane" id="tab-cm">
+                                <div class="plot-img-container plot-cm">
+                                    <img src="{{ url_for('static', filename='images/confusion_matrix.png') }}" alt="Confusion Matrix Plot">
+                                </div>
+                                <p class="plot-desc">Classification breakdown detailing correct/incorrect positive and negative predictions on holdout test set.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="result-placeholder">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <p>No model analytics available yet. Train model to view feature importances and confusion matrices.</p>
+                    </div>
+                    {% endif %}
+                </section>
+            </div>
+            
+        </div>
+
+        <footer>
+            <p>&copy; 2026 CrediShield Analytics Inc. All Rights Reserved. Powered by XGBoost and Scikit-Learn Pipelines.</p>
+        </footer>
+    </div>
+
+    <!-- Scripting for range slider, tabs, and form submission -->
+    <script>
+        // CIBIL range slider display
+        const cibilSlider = document.getElementById('cibil_score');
+        const cibilVal = document.getElementById('cibil_val');
+        
+        function updateCibilDisplay(val) {
+            cibilVal.textContent = val;
+            cibilVal.className = 'range-current ';
+            
+            // Color code the score display based on rating standard
+            if (val >= 750) {
+                cibilVal.classList.add('badge-green');
+            } else if (val >= 650) {
+                cibilVal.classList.add('badge-yellow');
+            } else {
+                cibilVal.classList.add('badge-red');
+            }
+        }
+        
+        cibilSlider.addEventListener('input', (e) => {
+            updateCibilDisplay(e.target.value);
+        });
+        
+        // Initialize CIBIL display
+        updateCibilDisplay(cibilSlider.value);
+
+        // Tab selection logic
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.getAttribute('data-tab');
+                
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabPanes.forEach(p => p.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(targetTab).classList.add('active');
+            });
+        });
+
+        // Form submission via AJAX Fetch API
+        const loanForm = document.getElementById('loanForm');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const resultPlaceholder = document.getElementById('resultPlaceholder');
+        const resultContent = document.getElementById('resultContent');
+        const resultCard = document.getElementById('resultCard');
+        
+        // Form response elements
+        const resultPercent = document.getElementById('resultPercent');
+        const decisionTitle = document.getElementById('decisionTitle');
+        const decisionSub = document.getElementById('decisionSub');
+        const metricApp = document.getElementById('metricApp');
+        const metricRej = document.getElementById('metricRej');
+        const modelUsedText = document.getElementById('modelUsedText');
+        const gaugeRing = document.getElementById('gaugeRing');
+
+        loanForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Loading state
+            btnText.classList.add('hidden');
+            btnSpinner.classList.remove('hidden');
+            
+            const formData = new FormData(loanForm);
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI
+                    resultPlaceholder.classList.add('hidden');
+                    resultContent.classList.remove('hidden');
+                    
+                    const confidencePercent = (data.confidence * 100).toFixed(1);
+                    resultPercent.textContent = `${confidencePercent}%`;
+                    modelUsedText.textContent = data.model_used;
+                    metricApp.textContent = `${(data.probability_approved * 100).toFixed(1)}%`;
+                    metricRej.textContent = `${(data.probability_rejected * 100).toFixed(1)}%`;
+                    
+                    decisionTitle.textContent = data.prediction.toUpperCase();
+                    
+                    // Style result card based on decision
+                    if (data.prediction.toLowerCase() === 'approved') {
+                        decisionTitle.className = 'text-green';
+                        decisionSub.textContent = 'Meets standard low-risk credit requirements';
+                        resultCard.style.border = '1px solid rgba(46, 204, 113, 0.4)';
+                        gaugeRing.style.background = `conic-gradient(#2ecc71 ${data.confidence * 360}deg, rgba(255, 255, 255, 0.1) 0deg)`;
+                    } else {
+                        decisionTitle.className = 'text-red';
+                        decisionSub.textContent = 'Application failed key risk thresholds';
+                        resultCard.style.border = '1px solid rgba(231, 76, 60, 0.4)';
+                        gaugeRing.style.background = `conic-gradient(#e74c3c ${data.confidence * 360}deg, rgba(255, 255, 255, 0.1) 0deg)`;
+                    }
+                    
+                    // Smooth scroll to results on small screens
+                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    alert(`Error running prediction: ${data.error}\nDetails: ${data.details}`);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Connection error or backend pipeline failed.');
+            } finally {
+                // Restore submit button state
+                btnText.classList.remove('hidden');
+                btnSpinner.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
