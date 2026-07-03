@@ -64,4 +64,5 @@ Kaggle Loan Approval Prediction Dataset
 
 ## Author
 
-**Shivang Si
+
+Shivang Singh
